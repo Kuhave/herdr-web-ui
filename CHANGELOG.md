@@ -30,6 +30,7 @@ between releases do not reach them. Remote-PC runtime bundles are versioned sepa
   `D2Coding, "Cascadia Mono"`, tried in order before the built-in fonts, so a font this device
   lacks falls back as before. The chat font applies to message text; code stays monospace.
   Stored per browser, like the other appearance settings.
+  ([#308](https://github.com/devswha/herdr-web-ui/pull/308) by @Kuhave)
 
 ### Changed
 - With an access token set (`HERDR_WEB_TOKEN`), your own Tailscale devices are asked for it too:
