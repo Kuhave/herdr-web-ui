@@ -71,7 +71,8 @@ function FontFamilyInput({ value, label, onCommit }: { value: string; label: str
       onChange={(event) => setDraft(event.target.value)}
       onBlur={commit}
       onKeyDown={(event) => {
-        if (event.key !== "Enter" || event.nativeEvent.isComposing) return;
+        // an IME keeps its Enter, including the committing one WebKit can send after compositionend as key code 229
+        if (event.key !== "Enter" || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229) return;
         event.preventDefault();
         commit();
       }}
