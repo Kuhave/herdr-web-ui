@@ -43,13 +43,16 @@ function normalizeName(raw: string): string {
 }
 
 /**
- * A typed family list as a CSS `font-family` value: unsafe characters dropped, each name trimmed,
- * empty ones removed, names CSS cannot read bare quoted. Names past the length limit are dropped
- * whole, so a cut never leaves an open quote. Anything that is not a string is no list at all.
+ * A typed family list as a CSS `font-family` value: composed (NFC), unsafe characters dropped,
+ * each name trimmed, empty ones removed, names CSS cannot read bare quoted. Names past the length
+ * limit are dropped whole, so a cut never leaves an open quote. Anything that is not a string is
+ * no list at all.
  */
 export function sanitizeFontFamily(value: unknown): string {
   if (typeof value !== "string") return "";
-  const names = value.replace(UNSAFE_CHARS, "").split(",").map(normalizeName).filter((name) => name !== "");
+  // composed: a name copied from a macOS file name can arrive decomposed (NFD), and the browser
+  // matches family names as written, so it would miss the installed font and fall back silently
+  const names = value.normalize("NFC").replace(UNSAFE_CHARS, "").split(",").map(normalizeName).filter((name) => name !== "");
   let family = "";
   for (const name of names) {
     const next = family === "" ? name : `${family}, ${name}`;

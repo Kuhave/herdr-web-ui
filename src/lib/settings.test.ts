@@ -74,6 +74,13 @@ describe("font families", () => {
     expect(family("Sarasa-Mono-K")).toBe("Sarasa-Mono-K");
   });
 
+  it("compose a decomposed name, so it matches the installed font", () => {
+    const decomposed = "나눔고딕코딩".normalize("NFD");
+    expect(decomposed).not.toBe("나눔고딕코딩");
+    expect(family(decomposed)).toBe("나눔고딕코딩");
+    expect(family(`D2Coding, ${"나눔 고딕".normalize("NFD")}`)).toBe('D2Coding, "나눔 고딕"');
+  });
+
   it("strip what could leave the declaration", () => {
     expect(family("D2Coding; color: red")).toBe('"D2Coding color: red"');
     expect(family("D2Coding} body { color: red")).toBe('"D2Coding body color: red"');
