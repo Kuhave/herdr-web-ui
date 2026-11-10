@@ -589,9 +589,13 @@ export function adjustTerminalGlyphs(term: Terminal): () => void {
       // reading offsetWidth makes the browser recalculate the whole page's style first: measured on
       // every rewrite, fast Korean typing kept the main thread busy and the box lagged behind. A fit
       // is measured once for its glyph and font; a face that arrives late clears it with the widths
-      const key = `${first}\u0000${fontWeight}\u0000${fontSize}\u0000${fontFamily}\u0000${cellWidth}`;
+      // the device pixel ratio too: xterm measures its cells again when the page zooms or the window changes screen
+      const key = `${first}\u0000${fontWeight}\u0000${fontSize}\u0000${fontFamily}\u0000${cellWidth}\u0000${globalThis.devicePixelRatio ?? 1}`;
       let fit = viewFits.get(key);
       if (fit === undefined) {
+        // a face still loading for this glyph is followed from here as well: the rows ask only for text they
+        // draw, and a syllable composed before any row drew its script would keep the stand-in's fit for good
+        lateFaces.ask(fontFamily ?? "", first);
         // xterm's own element: what it held goes back once the width is read
         const held = xtermMeasure.textContent;
         xtermMeasure.textContent = first.repeat(XTERM_MEASURE_REPEAT);

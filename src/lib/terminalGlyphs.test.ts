@@ -457,6 +457,33 @@ describe("adjustTerminalGlyphs fitting the composition view", () => {
   });
 });
 
+describe("adjustTerminalGlyphs fitting a syllable composed before any row drew its script", () => {
+  let page: ReturnType<typeof glyphPage> | undefined;
+  afterEach(() => {
+    page?.stop();
+    page?.restore();
+    page = undefined;
+  });
+
+  it("measures it again once its face arrived, though no row had asked for that face", async () => {
+    const inFace = freshViewFit([face('"Symbols Nerd Font Mono"', ICON_RANGE, "loaded"), face('"Ovis Hangul Mono"', HANGUL_RANGE, "loaded")], "한");
+    const icons = face('"Symbols Nerd Font Mono"', ICON_RANGE);
+    const hangul = face('"Ovis Hangul Mono"', HANGUL_RANGE);
+    // no row holds Korean yet: the composition is the first text to reach the face
+    page = glyphPage([icons, hangul], [], true);
+    page.compose("한");
+    const inStandIn = viewFit(page.view);
+    expect(page.xtermMeasure.reads).toBe(1);
+    hangul.arrive();
+    await settled([hangul]);
+    page.runFrames();
+    page.compose("하");
+    page.compose("한");
+    expect(viewFit(page.view)).toEqual(inFace);
+    expect(inFace).not.toEqual(inStandIn);
+  });
+});
+
 describe("stretchedView", () => {
   it("adds the stretch to xterm's move of a long composition, counting the stretched width", () => {
     expect(stretchedView("translateX(min(0px, calc(40px - 100%)))", "scaleX(1.1)")).toBe("translateX(min(0px, calc(40px - 110%))) scaleX(1.1)");
