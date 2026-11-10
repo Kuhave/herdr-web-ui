@@ -471,6 +471,7 @@ describe("adjustTerminalGlyphs fitting a syllable composed before any row drew i
     const hangul = face('"Ovis Hangul Mono"', HANGUL_RANGE);
     // no row holds Korean yet: the composition is the first text to reach the face
     page = glyphPage([icons, hangul], [], true);
+    const family = page.term.options.fontFamily;
     page.compose("한");
     const inStandIn = viewFit(page.view);
     expect(page.xtermMeasure.reads).toBe(1);
@@ -481,6 +482,9 @@ describe("adjustTerminalGlyphs fitting a syllable composed before any row drew i
     page.compose("한");
     expect(viewFit(page.view)).toEqual(inFace);
     expect(inFace).not.toEqual(inStandIn);
+    // no row drew from the face: the rows are not drawn again and the family is left as it was
+    expect(page.term.refreshes).toBe(0);
+    expect(page.term.options.fontFamily).toBe(family);
   });
 });
 

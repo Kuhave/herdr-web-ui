@@ -551,6 +551,10 @@ export function adjustTerminalGlyphs(term: Terminal): () => void {
     else if (family.includes(single)) term.options.fontFamily = family.replace(single, double);
     term.refresh(0, term.rows - 1);
   });
+  // the composition view's own follower: a face that only a composing glyph reached measures the view again
+  // when it arrives, and nothing else. No row drew from it, so the rows are neither measured nor drawn again
+  // (that would blank the pane for a frame under the person's typing)
+  const viewFaces = followLateFaces(document.fonts as FontFaceSet | undefined, (callback) => { requestAnimationFrame(callback); }, () => { viewFits.clear(); });
   adjustAll(rows.querySelectorAll("span"));
   placeBoxes();
   const observer = new MutationObserver((records) => {
@@ -595,7 +599,7 @@ export function adjustTerminalGlyphs(term: Terminal): () => void {
       if (fit === undefined) {
         // a face still loading for this glyph is followed from here as well: the rows ask only for text they
         // draw, and a syllable composed before any row drew its script would keep the stand-in's fit for good
-        lateFaces.ask(fontFamily ?? "", first);
+        viewFaces.ask(fontFamily ?? "", first);
         // xterm's own element: what it held goes back once the width is read
         const held = xtermMeasure.textContent;
         xtermMeasure.textContent = first.repeat(XTERM_MEASURE_REPEAT);
@@ -644,5 +648,6 @@ export function adjustTerminalGlyphs(term: Terminal): () => void {
     observer.disconnect();
     viewObserver.disconnect();
     lateFaces.stop();
+    viewFaces.stop();
   };
 }
